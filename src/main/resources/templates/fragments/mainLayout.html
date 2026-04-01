@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="mainHead">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulatewicz Task App</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+        }
+
+        .bg {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(45deg, #c3e9ff, #5ebcff, #4684ff);
+            background-size: 400% 400%;
+            animation: gradientMove 15s ease infinite;
+            z-index: -1;
+        }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: var(--sidebar-width);
+            padding-top: 5vh;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar .nav {
+            padding: 0 15px;
+            width: 100%;
+        }
+
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            color: #000;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            transition: 0.2s;
+            white-space: nowrap;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0) !important;
+        }
+
+        .nav-link.active, .nav-link:hover {
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            color: #014fa4 !important;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: var(--sidebar-collapsed-width);
+            }
+            .sidebar .description {
+                display: none;
+            }
+            .sidebar .nav-link {
+                justify-content: center;
+                padding: 15px 0;
+            }
+            .sidebar .nav-link i {
+                margin: 0 !important;
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="main-layout" th:fragment="mainLayout">
+    <div class="bg"></div>
+
+    <div class="app-viewport">
+        <div class="sidebar">
+            <nav class="nav flex-column">
+                <a class="nav-link" th:href="@{/}" th:classappend="${currentPage == 'tasks' ? 'active' : ''}">
+                        <span class="icon">
+                            <i class="bi bi-layers me-2"></i>
+                        </span>
+                    <span class="description">Tasks</span>
+                </a>
+                <a class="nav-link" th:href="@{/history}" th:classappend="${currentPage == 'history' ? 'active' : ''}">
+                        <span class="icon">
+                            <i class="bi bi-clock me-2"></i>
+                        </span>
+                    <span class="description">History</span>
+                </a>
+                <a class="nav-link" th:href="@{/recentlyDeleted}" th:classappend="${currentPage == 'recentlyDeleted' ? 'active' : ''}">
+                        <span class="icon">
+                            <i class="bi bi-trash me-2"></i>
+                        </span>
+                    <span class="description">Recently Deleted</span>
+                </a>
+                <a class="nav-link" th:href="@{/settings}" th:classappend="${currentPage == 'settings' ? 'active' : ''}">
+                        <span class="icon">
+                            <i class="bi bi-gear me-2"></i>
+                        </span>
+                    <span class="description">Settings</span>
+                </a>
+            </nav>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+
+</script>
+</body>
+</html>
