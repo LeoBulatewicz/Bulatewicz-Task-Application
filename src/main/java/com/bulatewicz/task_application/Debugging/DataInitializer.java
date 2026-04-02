@@ -25,7 +25,7 @@ public class DataInitializer {
                         .build();
                 userRepository.save(devUser);
 
-                Task task1 = Task.builder()
+                /*Task task1 = Task.builder()
                         .description("DO SOMETHING")
                         .dueDate(LocalDate.now().plusDays(2))
                         .status(TaskStatus.IN_PROGRESS)
@@ -41,7 +41,7 @@ public class DataInitializer {
                         .owner(devUser)
                         .build();
 
-                taskRepository.saveAll(List.of(task1, task2));
+                taskRepository.saveAll(List.of(task1, task2));*///Won't need now
             }
         };
     }

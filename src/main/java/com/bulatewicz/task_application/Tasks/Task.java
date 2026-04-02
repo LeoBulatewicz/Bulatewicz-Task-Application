@@ -22,6 +22,7 @@ public class Task {
     @JoinColumn(name = "user_id")
     private User owner;
     private String description;
+    @Column(name = "due_date", nullable = true)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dueDate;
     private LocalDate creationDate;

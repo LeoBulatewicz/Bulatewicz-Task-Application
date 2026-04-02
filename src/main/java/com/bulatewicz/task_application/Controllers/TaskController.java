@@ -52,7 +52,7 @@ public class TaskController {
 
     @PostMapping("/createTask")
     public String addTask(@RequestParam String description,
-                          @RequestParam String dueDate,
+                          @RequestParam(required = false) String dueDate,
                           @RequestParam String priority,
                           Principal principal) {
 

@@ -42,8 +42,9 @@ public class TaskService {
 
         List<Task> tasks = taskRepository.findByOwnerAndStatusIn(activeUser, activeStatuses);
         tasks.forEach(task -> {
-            if (task.getStatus().equals(TaskStatus.IN_PROGRESS) &&
-            task.getDueDate().isBefore(LocalDate.now())) {
+            if (task.getDueDate() != null &&
+                task.getStatus().equals(TaskStatus.IN_PROGRESS) &&
+                task.getDueDate().isBefore(LocalDate.now())) {
                 task.setStatus(TaskStatus.OVERDUE);
             }
         });
@@ -66,7 +67,7 @@ public class TaskService {
     public void createTask(Principal user, String description, String dueDate, String priority) {
         String username = user.getName();
         Task task = new Task();
-        LocalDate date = LocalDate.parse(dueDate);
+        LocalDate date = (dueDate == null || dueDate.isEmpty()) ? null : LocalDate.parse(dueDate);
         task.setOwner(userRepository.findByUsername(username));
         task.setDescription(description);
         task.setDueDate(date);
