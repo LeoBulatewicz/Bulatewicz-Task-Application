@@ -26,6 +26,8 @@ public class Task {
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dueDate;
     private LocalDate creationDate;
+    @Column(name = "delete_date", nullable = true)
+    private LocalDate deleteDate;
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
     @Enumerated(EnumType.STRING)

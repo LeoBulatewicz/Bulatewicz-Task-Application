@@ -1,9 +1,161 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments/mainLayout :: mainHead}"></head>
+<head th:insert="~{fragments/mainLayout :: mainHead}"></head>
+<head>
+    <style>
+        .text-priority-HIGH { color: #ff3b30 !important;}
+        .text-priority-MEDIUM { color: #007aff !important;}
+        .text-priority-LOW { color: #34c759 !important;}
+
+        .bg-priority-HIGH { background-color: #ff3b30 !important;}
+        .bg-priority-MEDIUM { background-color: #007aff !important;}
+        .bg-priority-LOW { background-color: #34c759 !important;}
+
+        .bg-overdue { background-color: #692926 !important; }
+
+        .border-overdue {
+            border: 2px solid rgba(255, 59, 48, 0.5) !important;
+            box-shadow: 0 0 10px rgba(255, 59, 48, 0.2);
+        }
+
+        .task-container {
+            margin-left: var(--sidebar-width);
+            padding: 40px 40px 40px 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: start;
+            transition: margin-left 0.3s ease;
+        }
+
+        .task-container .task-card {
+            width: 100%;
+            max-width: 85vw;
+            min-height: 11vh;
+            height: auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .task-card h5 {
+            font-size: clamp(1rem, 2vw + 0.5rem, 1.25rem);
+            line-height: 1.2;
+            word-wrap: break-word;
+        }
+
+        .task-card .badge {
+            font-size: clamp(0.6rem, 1vw, 0.75rem) !important;
+            padding: 0.4em 0.8em !important;
+        }
+
+        .task-card .text-secondary {
+            font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+            margin-top: 4px;
+        }
+
+        .task-actions {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-action {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .btn-action:hover {
+            transform: scale(1.1);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .btn-complete:hover { color: #34c759 !important; border-color: #34c759; box-shadow: 0 0 15px rgba(52, 199, 89, 0.3); }
+        .btn-delete:hover { color: #ff3b30 !important; border-color: #ff3b30; box-shadow: 0 0 15px rgba(255, 59, 48, 0.3); }
+
+        .task-content-wrapper {
+            padding-right: 130px;
+        }
+
+        @media (max-width: 768px) {
+            .task-container {
+                margin-left: var(--sidebar-collapsed-width);
+                padding: 150px 20px 20px 20px;
+            }
+
+            .task-container .task-card {
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
 <body>
-<div class="bg"></div> <div class="app-viewport">
+<div class="app-viewport">
     <div th:replace="~{fragments/mainLayout :: mainLayout}"></div>
+
+    <div class="task-container">
+        <div class="task-card"
+             th:each="task : ${tasks}"
+             th:classappend="${task.status.name() == 'OVERDUE' ? 'border-overdue' : ''}">
+
+            <div class="task-content-wrapper">
+                <div class="d-flex align-items-center mb-1">
+                    <h5 class="mb-0 fw-bold me-3"
+                        th:text="${task.description}"
+                        th:classappend="'text-priority-' + ${task.priority}">
+                        Task Title
+                    </h5>
+                    <span class="badge rounded-pill"
+                          th:text="${task.status}"
+                          th:classappend="${task.status.name() == 'OVERDUE'} ? 'bg-overdue' : 'bg-priority-' + ${task.priority}">
+                STATUS
+            </span>
+                </div>
+
+                <span class="text-secondary small">
+            <i class="bi bi-calendar4-event me-2"></i>
+            Due: <span th:text="${task.dueDate != null ? #temporals.format(task.dueDate, 'MM-dd-yyyy') : 'Never'}">Never</span>
+        </span>
+            </div>
+
+            <div class="task-actions">
+                <form th:action="@{/recoverTask/{id}(id=${task.id})}" method="post">
+                    <button type="submit" class="btn btn-action btn-complete" title="Recover Task">
+                        <i class="bi bi-check2-circle"></i>
+                    </button>
+                </form>
+
+                <form th:action="@{/permDeleteTask/{id}(id=${task.id})}" method="post">
+                    <button type="submit" class="btn btn-action btn-delete" title="Permanently Delete Task">
+                        <i class="bi bi-trash3"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+</script>
 </html>

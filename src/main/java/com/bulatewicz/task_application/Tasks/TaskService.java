@@ -10,10 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,8 +40,8 @@ public class TaskService {
         List<Task> tasks = taskRepository.findByOwnerAndStatusIn(activeUser, activeStatuses);
         tasks.forEach(task -> {
             if (task.getDueDate() != null &&
-                task.getStatus().equals(TaskStatus.IN_PROGRESS) &&
-                task.getDueDate().isBefore(LocalDate.now())) {
+                    task.getStatus().equals(TaskStatus.IN_PROGRESS) &&
+                    task.getDueDate().isBefore(LocalDate.now())) {
                 task.setStatus(TaskStatus.OVERDUE);
             }
         });
@@ -53,6 +50,34 @@ public class TaskService {
                 .sorted(Comparator
                         .comparing((Task task) -> task.getStatus() == TaskStatus.OVERDUE ? 0 : 1)
                         .thenComparing(Task::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(task ->
+                                switch(task.getPriority()) {
+                                    case HIGH -> 1;
+                                    case MEDIUM -> 2;
+                                    case LOW -> 3;
+                                    default -> 4;
+                                })
+                        .thenComparing(Task::getDescription, Comparator.nullsLast(Comparator.naturalOrder())))
+                .collect(Collectors.toList());
+    }
+
+    public List<Task> getDeletedTasksForUser(Principal principal) {
+        if (principal == null) { return null; }
+        User activeUser = userRepository.findByUsername(principal.getName());
+        if (activeUser == null) { return null; }
+        Collection<TaskStatus> deletedStatuses = Set.of(TaskStatus.DELETED);
+        List<Task> tasks = taskRepository.findByOwnerAndStatusIn(activeUser, deletedStatuses);
+
+        tasks.forEach(task -> {
+            if(task.getDeleteDate() != null &&
+                    LocalDate.now().isAfter(task.getDeleteDate().plusDays(30))) {
+                taskRepository.delete(task);
+            }
+        });
+
+        return tasks.stream()
+                .sorted(Comparator
+                        .comparing(Task::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
                         .thenComparing(task ->
                                 switch(task.getPriority()) {
                                     case HIGH -> 1;
@@ -75,5 +100,34 @@ public class TaskService {
         task.setPriority(TaskPriority.valueOf(priority));
         task.setStatus(TaskStatus.IN_PROGRESS);
         taskRepository.save(task);
+    }
+
+    public void deleteTask(UUID id, Principal user) {
+        taskRepository.findById(id).ifPresent(task -> {
+            task.setStatus(TaskStatus.DELETED);
+            task.setDeleteDate(LocalDate.now());
+            taskRepository.save(task);
+        });
+    }
+
+    public void completeTask(UUID id, Principal user) {
+        taskRepository.findById(id).ifPresent(task -> {
+            task.setStatus(TaskStatus.COMPLETED);
+            taskRepository.save(task);
+        });
+    }
+
+    public void recoverTask(UUID id, Principal user) {
+        taskRepository.findById(id).ifPresent(task -> {
+            task.setStatus(TaskStatus.IN_PROGRESS);
+            task.setDeleteDate(null);
+            taskRepository.save(task);
+        });
+    }
+
+    public void permDeleteTask(UUID id, Principal user) {
+        taskRepository.findById(id).ifPresent(task -> {
+            taskRepository.delete(task);
+        });
     }
 }
