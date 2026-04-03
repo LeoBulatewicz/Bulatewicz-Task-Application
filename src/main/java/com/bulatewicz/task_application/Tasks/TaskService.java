@@ -89,6 +89,17 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
+    public List<Task> getAllTasksForUser(Principal principal) {
+        if (principal == null) { return null; }
+        User activeUser = userRepository.findByUsername(principal.getName());
+        if (activeUser == null) { return null; }
+
+        List<Task> tasks = taskRepository.findByOwner(activeUser);
+        Collections.reverse(tasks);
+
+        return tasks;
+    }
+
     public void createTask(Principal user, String description, String dueDate, String priority) {
         String username = user.getName();
         Task task = new Task();

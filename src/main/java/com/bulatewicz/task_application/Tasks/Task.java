@@ -25,6 +25,8 @@ public class Task {
     @Column(name = "due_date", nullable = true)
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate dueDate;
+    @Column(name = "creation_date", nullable = false)
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate creationDate;
     @Column(name = "delete_date", nullable = true)
     private LocalDate deleteDate;

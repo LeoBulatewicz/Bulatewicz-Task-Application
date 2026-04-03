@@ -34,7 +34,10 @@ public class TaskController {
     }
 
     @GetMapping("/history")
-    public String viewHistory(Model model) {
+    public String viewHistory(Model model, Principal principal) {
+        List<Task> tasks = taskService.getAllTasksForUser(principal);
+
+        model.addAttribute("tasks", tasks);
         model.addAttribute("currentPage" , "history");
         return "history";
     }
@@ -91,6 +94,15 @@ public class TaskController {
         }
 
         return "redirect:/recentlyDeleted";
+    }
+
+    @PostMapping("/removeFromHistory/{id}")
+    public String removeFromHistory(@PathVariable UUID id, Principal principal) {
+        if(principal != null) {
+            taskService.permDeleteTask(id, principal);
+        }
+
+        return "redirect:/history";
     }
 
     @PostMapping("/recoverTask/{id}")
