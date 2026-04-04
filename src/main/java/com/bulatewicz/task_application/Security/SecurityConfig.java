@@ -26,9 +26,17 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .logout(logout -> logout
+                        .deleteCookies("JSESSIONID")
                         .logoutSuccessUrl("/settings")
                         .permitAll()
+                )
+                .rememberMe(remember -> remember
+                        .key("uniqueAndSecretBulatewiczKey")
+                        .tokenValiditySeconds(31536000)
+                        .alwaysRemember(true)
                 );
+
+
 
         return http.build();
     }
