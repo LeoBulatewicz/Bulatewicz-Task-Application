@@ -28,16 +28,14 @@ public class TaskService {
      * - Priority: Tasks with a higher {@link com.bulatewicz.task_application.Enums.TaskPriority} are prioritized<br>
      * - Description: Alphabetical order of the task description<br>
      */
-    public List<Task> getTasksForUser(Principal principal) {
-        if (principal == null) { return null; }
-        User activeUser = userRepository.findByUsername(principal.getName());
-        if (activeUser == null) { return null; }
+    public List<Task> getTasksForUser(User user) {
+        if (user == null) { return null; }
         Collection<TaskStatus> activeStatuses = Set.of(
                 TaskStatus.IN_PROGRESS,
                 TaskStatus.OVERDUE
         );
 
-        List<Task> tasks = taskRepository.findByOwnerAndStatusIn(activeUser, activeStatuses);
+        List<Task> tasks = taskRepository.findByOwnerAndStatusIn(user, activeStatuses);
         tasks.forEach(task -> {
             if (task.getDueDate() != null &&
                     task.getStatus().equals(TaskStatus.IN_PROGRESS) &&
@@ -61,12 +59,10 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    public List<Task> getDeletedTasksForUser(Principal principal) {
-        if (principal == null) { return null; }
-        User activeUser = userRepository.findByUsername(principal.getName());
-        if (activeUser == null) { return null; }
+    public List<Task> getDeletedTasksForUser(User user) {
+        if (user == null) { return null; }
         Collection<TaskStatus> deletedStatuses = Set.of(TaskStatus.DELETED);
-        List<Task> tasks = taskRepository.findByOwnerAndStatusIn(activeUser, deletedStatuses);
+        List<Task> tasks = taskRepository.findByOwnerAndStatusIn(user, deletedStatuses);
 
         tasks.forEach(task -> {
             if(task.getDeleteDate() != null &&
@@ -89,22 +85,19 @@ public class TaskService {
                 .collect(Collectors.toList());
     }
 
-    public List<Task> getAllTasksForUser(Principal principal) {
-        if (principal == null) { return null; }
-        User activeUser = userRepository.findByUsername(principal.getName());
-        if (activeUser == null) { return null; }
+    public List<Task> getAllTasksForUser(User user) {
+        if (user == null) { return null; }
 
-        List<Task> tasks = taskRepository.findByOwner(activeUser);
+        List<Task> tasks = taskRepository.findByOwner(user);
         Collections.reverse(tasks);
 
         return tasks;
     }
 
-    public void createTask(Principal user, String description, String dueDate, String priority) {
-        String username = user.getName();
+    public void createTask(User user, String description, String dueDate, String priority) {
         Task task = new Task();
         LocalDate date = (dueDate == null || dueDate.isEmpty()) ? null : LocalDate.parse(dueDate);
-        task.setOwner(userRepository.findByUsername(username));
+        task.setOwner(user);
         task.setDescription(description);
         task.setDueDate(date);
         task.setCreationDate(LocalDate.now());
@@ -113,7 +106,7 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public void deleteTask(UUID id, Principal user) {
+    public void deleteTask(UUID id) {
         taskRepository.findById(id).ifPresent(task -> {
             task.setStatus(TaskStatus.DELETED);
             task.setDeleteDate(LocalDate.now());
@@ -121,14 +114,14 @@ public class TaskService {
         });
     }
 
-    public void completeTask(UUID id, Principal user) {
+    public void completeTask(UUID id) {
         taskRepository.findById(id).ifPresent(task -> {
             task.setStatus(TaskStatus.COMPLETED);
             taskRepository.save(task);
         });
     }
 
-    public void recoverTask(UUID id, Principal user) {
+    public void recoverTask(UUID id) {
         taskRepository.findById(id).ifPresent(task -> {
             task.setStatus(TaskStatus.IN_PROGRESS);
             task.setDeleteDate(null);
@@ -136,7 +129,7 @@ public class TaskService {
         });
     }
 
-    public void permDeleteTask(UUID id, Principal user) {
+    public void permDeleteTask(UUID id) {
         taskRepository.findById(id).ifPresent(task -> {
             taskRepository.delete(task);
         });

@@ -4,7 +4,12 @@ import com.bulatewicz.task_application.Enums.TaskPriority;
 import com.bulatewicz.task_application.Enums.TaskStatus;
 import com.bulatewicz.task_application.Tasks.Task;
 import com.bulatewicz.task_application.Tasks.TaskService;
+import com.bulatewicz.task_application.Users.User;
+import com.bulatewicz.task_application.Users.UserService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -22,10 +27,16 @@ import java.util.UUID;
 public class TaskController {
     @Autowired
     private TaskService taskService;
+    @Autowired
+    private UserService userService;
 
     @GetMapping({"/", "/tasks"})
-    public String viewTasks(Model model, Principal principal) {
-        List<Task> tasks = taskService.getTasksForUser(principal);
+    public String viewTasks(Model model, @AuthenticationPrincipal User user) {
+        if(user == null) {
+            return "redirect:/settings";
+        }
+
+        List<Task> tasks = taskService.getTasksForUser(user);
 
         model.addAttribute("tasks", tasks);
         model.addAttribute("currentPage" , "tasks");
@@ -34,8 +45,8 @@ public class TaskController {
     }
 
     @GetMapping("/history")
-    public String viewHistory(Model model, Principal principal) {
-        List<Task> tasks = taskService.getAllTasksForUser(principal);
+    public String viewHistory(Model model, @AuthenticationPrincipal User user) {
+        List<Task> tasks = taskService.getAllTasksForUser(user);
 
         model.addAttribute("tasks", tasks);
         model.addAttribute("currentPage" , "history");
@@ -43,8 +54,8 @@ public class TaskController {
     }
 
     @GetMapping("/recentlyDeleted")
-    public String viewRecentlyDeleted(Model model, Principal principal) {
-        List<Task> tasks = taskService.getDeletedTasksForUser(principal);
+    public String viewRecentlyDeleted(Model model, @AuthenticationPrincipal User user) {
+        List<Task> tasks = taskService.getDeletedTasksForUser(user);
 
         model.addAttribute("tasks", tasks);
         model.addAttribute("currentPage" , "recentlyDeleted");
@@ -61,56 +72,64 @@ public class TaskController {
     public String addTask(@RequestParam String description,
                           @RequestParam(required = false) String dueDate,
                           @RequestParam String priority,
-                          Principal principal) {
+                          @AuthenticationPrincipal User user) {
 
-        if (principal != null) {
-            taskService.createTask(principal, description, dueDate, priority);
+        if (user != null) {
+            taskService.createTask(user, description, dueDate, priority);
         }
         return "redirect:/";
     }
 
     @PostMapping("/completeTask/{id}")
-    public String completeTask(@PathVariable UUID id, Principal principal) {
-        if(principal != null) {
-            taskService.completeTask(id, principal);
-        }
+    public String completeTask(@PathVariable UUID id) {
+        taskService.completeTask(id);
 
         return "redirect:/";
     }
 
     @PostMapping("/deleteTask/{id}")
-    public String deleteTask(@PathVariable UUID id, Principal principal) {
-        if(principal != null) {
-            taskService.deleteTask(id, principal);
-        }
+    public String deleteTask(@PathVariable UUID id) {
+        taskService.deleteTask(id);
 
         return "redirect:/";
     }
 
     @PostMapping("/permDeleteTask/{id}")
-    public String permDeleteTask(@PathVariable UUID id, Principal principal) {
-        if(principal != null) {
-            taskService.permDeleteTask(id, principal);
-        }
+    public String permDeleteTask(@PathVariable UUID id) {
+        taskService.permDeleteTask(id);
 
         return "redirect:/recentlyDeleted";
     }
 
     @PostMapping("/removeFromHistory/{id}")
-    public String removeFromHistory(@PathVariable UUID id, Principal principal) {
-        if(principal != null) {
-            taskService.permDeleteTask(id, principal);
-        }
+    public String removeFromHistory(@PathVariable UUID id) {
+        taskService.permDeleteTask(id);
 
         return "redirect:/history";
     }
 
     @PostMapping("/recoverTask/{id}")
-    public String recoverTask(@PathVariable UUID id, Principal principal) {
-        if(principal != null) {
-            taskService.recoverTask(id, principal);
-        }
+    public String recoverTask(@PathVariable UUID id) {
+        taskService.recoverTask(id);
 
         return "redirect:/recentlyDeleted";
+    }
+
+    @PostMapping("/register")
+    public String registerUser(@RequestParam String username, @RequestParam String password) {
+        userService.registerUser(username, password);
+
+        System.out.println(username + " " + password);
+
+        return "redirect:/settings?registered=true";
+    }
+
+    @PostMapping("/deleteAccount")
+    public String deleteAccount(@AuthenticationPrincipal User user, HttpServletRequest request) throws ServletException {
+        userService.deleteUser(user);
+
+        request.logout();
+
+        return "redirect:/settings?deleted=true";
     }
 }
