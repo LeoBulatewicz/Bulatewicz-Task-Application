@@ -94,7 +94,7 @@
         @media (max-width: 768px) {
             .task-container {
                 margin-left: var(--sidebar-collapsed-width);
-                padding: 150px 20px 20px 20px;
+                padding: 40px 20px 20px 20px;
             }
 
             .task-container .task-card {
@@ -111,7 +111,8 @@
     <div class="task-container">
         <div class="task-card"
              th:each="task : ${tasks}"
-             th:classappend="${task.status.name() == 'OVERDUE' ? 'border-overdue' : ''}">
+             th:classappend="${task.status.name() == 'OVERDUE' ? 'border-overdue' : ''}"
+             th:if="${task.status.name() != 'IN_PROGRESS'}">
 
             <div class="task-content-wrapper">
                 <div class="d-flex align-items-center mb-1">
